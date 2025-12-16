@@ -1,5 +1,7 @@
 import flet as ft
 from muebles.conexion import ConexionDB
+import tema
+
 
 class InicioSesionView(ft.Container):
     def __init__(
@@ -8,24 +10,26 @@ class InicioSesionView(ft.Container):
         on_login_success,
         *,
         app_title: str = "Sistema de Venta de Muebles",
-        accent_color: str = "#5E35B1",
-        logo_path: str = None,
+        accent_color: str = None,
+        logo_path: str = "assets/logo.png",
     ):
-        super().__init__(expand=True, bgcolor="#F6F5FB")
+        super().__init__(expand=True, bgcolor=tema.COLOR_FONDO)
+
         self.page = page
         self.on_login_success = on_login_success
         self.conexion = ConexionDB()
         self.app_title = app_title
-        self.accent_color = accent_color
+        self.accent_color = accent_color or tema.COLOR_PRIMARY
         self.logo_path = logo_path
 
-        # ---------------- INPUTS RESPONSIVOS ----------------
+        # ---------------- INPUTS ----------------
         self.input_usuario = ft.TextField(
             label="Usuario",
             expand=True,
             prefix_icon=ft.Icons.PERSON_OUTLINE,
             autofocus=True,
-            on_submit=self._on_submit_field
+            on_submit=self._on_submit_field,
+            **tema.estilo_textfield()
         )
 
         self.input_contrasena = ft.TextField(
@@ -34,23 +38,30 @@ class InicioSesionView(ft.Container):
             password=True,
             can_reveal_password=True,
             prefix_icon=ft.Icons.LOCK_OUTLINE,
-            on_submit=self._on_submit_field
+            on_submit=self._on_submit_field,
+            **tema.estilo_textfield()
         )
 
-        self.chk_recordarme = ft.Checkbox(label="Recordarme", value=False)
-        self.msg_error = ft.Text("", color="red", size=13)
+        self.chk_recordarme = ft.Checkbox(
+            label="Recordarme",
+            value=False,
+            fill_color=tema.COLOR_PRIMARY,
+            check_color=tema.COLOR_ON_PRIMARY
+        )
+
+        self.msg_error = ft.Text("", color=tema.COLOR_ERROR, size=13)
 
         self.btn_login = ft.ElevatedButton(
             "Iniciar sesión",
             expand=True,
-            bgcolor=self.accent_color,
-            color="white",
-            on_click=self.iniciar_sesion
+            on_click=self.iniciar_sesion,
+            **tema.estilo_boton_primario()
         )
 
         self.btn_forgot = ft.TextButton(
             "¿Olvidaste tu contraseña?",
-            on_click=self._forgot_password
+            on_click=self._forgot_password,
+            style=ft.ButtonStyle(color=tema.COLOR_PRIMARY)
         )
 
         # ---------------- COLUMNA IZQUIERDA ----------------
@@ -60,7 +71,11 @@ class InicioSesionView(ft.Container):
                 self.input_usuario,
                 self.input_contrasena,
                 ft.Row(
-                    [self.chk_recordarme, ft.Container(expand=True), self.btn_forgot],
+                    [
+                        self.chk_recordarme,
+                        ft.Container(expand=True),
+                        self.btn_forgot
+                    ],
                     vertical_alignment=ft.CrossAxisAlignment.CENTER
                 ),
                 self.msg_error,
@@ -73,71 +88,83 @@ class InicioSesionView(ft.Container):
         # ---------------- COLUMNA DERECHA ----------------
         right_column = ft.Column(
             [
-                ft.Text("Accede al sistema", size=16, weight=ft.FontWeight.BOLD),
-                ft.Text(
+                tema.texto_titulo("Accede al sistema", 18),
+                tema.texto_cuerpo(
                     "• Gestión de clientes, productos y ventas\n"
                     "• Acceso seguro por usuario\n"
                     "• Interfaz moderna y adaptable",
-                    size=12,
-                    color="#616161"
+                    12
                 ),
-                ft.Divider(),
-                ft.Icon(ft.Icons.SHIELD, size=44, color=self.accent_color),
-                ft.Text("Seguridad", weight=ft.FontWeight.BOLD),
-                ft.Text(
-                    "Usa contraseñas seguras.\nContacta al administrador para cambios.",
-                    size=12,
-                    color="#616161"
+                tema.crear_divider(),
+                ft.Icon(ft.Icons.SHIELD, size=44, color=tema.COLOR_PRIMARY),
+                tema.texto_titulo("Seguridad", 16),
+                tema.texto_cuerpo(
+                    "Usa contraseñas seguras.\n"
+                    "Contacta al administrador para cambios.",
+                    12
                 ),
             ],
             spacing=8
         )
 
-        # ---------------- CARD (SIN constraints) ----------------
-        card = ft.Card(
-            elevation=8,
-            shape=ft.RoundedRectangleBorder(radius=12),
-            content=ft.Container(
-                padding=20,
-                width=420,  # ✅ compatible con tu versión de Flet
-                content=ft.Column(
-                    [
-                        left_column,
-                        ft.Divider(),
-                        right_column
-                    ],
-                    spacing=20
-                )
-            )
+        # ---------------- CARD ----------------
+        card = ft.Container(
+            **tema.estilo_card(),
+            content=ft.Column(
+                [
+                    left_column,
+                    tema.crear_divider(),
+                    right_column
+                ],
+                spacing=20,
+                scroll=ft.ScrollMode.AUTO
+            ),
+            width=480
         )
 
-        # ---------------- CENTRADO TOTAL ----------------
+        # ---------------- CENTRADO ----------------
         self.content = ft.Container(
             expand=True,
             alignment=ft.alignment.center,
-            content=card
+            padding=ft.padding.all(20),
+            content=ft.ResponsiveRow(
+                [
+                    ft.Container(
+                        content=card,
+                        col={"xs": 12, "sm": 10, "md": 8, "lg": 6, "xl": 5},
+                        alignment=ft.alignment.center,
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            )
         )
 
     # ---------------- BRAND ----------------
     def _build_brand_section(self):
-        if self.logo_path:
-            img = ft.Image(src=self.logo_path, width=64, height=64)
-        else:
-            img = ft.Icon(ft.Icons.BUSINESS, size=56, color=self.accent_color)
+        img = ft.Image(
+            src=self.logo_path,
+            width=80,
+            height=80,
+            fit=ft.ImageFit.CONTAIN,
+            error_content=ft.Icon(
+                ft.Icons.BUSINESS,
+                size=64,
+                color=tema.COLOR_PRIMARY
+            )
+        )
 
-        return ft.Row(
+        return ft.Column(
             [
-                img,
-                ft.Column(
-                    [
-                        ft.Text(self.app_title, weight=ft.FontWeight.BOLD, size=16),
-                        ft.Text("Inicia sesión para continuar", size=12, color="#616161")
-                    ],
-                    spacing=2
-                )
+                ft.Container(
+                    content=img,
+                    alignment=ft.alignment.center,
+                    padding=ft.padding.only(bottom=10)
+                ),
+                tema.texto_titulo(self.app_title, 20),
+                tema.texto_cuerpo("Inicia sesión para continuar", 12)
             ],
-            spacing=12,
-            alignment=ft.MainAxisAlignment.CENTER
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=8
         )
 
     # ---------------- EVENTOS ----------------
@@ -147,16 +174,27 @@ class InicioSesionView(ft.Container):
     def _forgot_password(self, e):
         dlg = ft.AlertDialog(
             modal=True,
-            title=ft.Text("Recuperación de contraseña"),
-            content=ft.Text(
-                "Contacta al administrador del sistema para restablecer tu contraseña."
+            bgcolor=tema.COLOR_SURFACE,
+            title=tema.texto_titulo("Recuperación de contraseña", 18),
+            content=tema.texto_cuerpo(
+                "Contacta al administrador del sistema "
+                "para restablecer tu contraseña."
             ),
             actions=[
-                ft.TextButton("Cerrar", on_click=lambda ev: self.page.dialog.close())
+                ft.TextButton(
+                    "Cerrar",
+                    on_click=lambda ev: self._cerrar_dialogo(),
+                    style=ft.ButtonStyle(color=tema.COLOR_PRIMARY)
+                )
             ]
         )
+
         self.page.dialog = dlg
         dlg.open = True
+        self.page.update()
+
+    def _cerrar_dialogo(self):
+        self.page.dialog.open = False
         self.page.update()
 
     # ---------------- LOGIN ----------------

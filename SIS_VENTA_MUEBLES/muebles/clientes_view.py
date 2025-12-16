@@ -1,16 +1,17 @@
 import flet as ft
 from muebles.conexion import ConexionDB
 import mysql.connector
+import tema
 
 
 class ClientesView(ft.Container):
     """
     MISMA LÓGICA
-    NUEVO DISEÑO
+    NUEVO DISEÑO - TEMA OSCURO
     """
 
     def __init__(self, page, volver_atras):
-        super().__init__(expand=True)
+        super().__init__(expand=True, bgcolor=tema.COLOR_FONDO)
         self.page = page
         self.volver_atras = volver_atras
         self.conexion = ConexionDB()
@@ -26,27 +27,20 @@ class ClientesView(ft.Container):
 
         self.btn_add = ft.FloatingActionButton(
             icon=ft.Icons.ADD,
-            bgcolor=ft.Colors.BLUE,
+            bgcolor=tema.COLOR_PRIMARY,
             on_click=self.mostrar_formulario_agregar
         )
 
         self.header = ft.Container(
-            padding=20,
-            bgcolor=ft.Colors.WHITE,
-            border_radius=12,
-            shadow=ft.BoxShadow(blur_radius=8, color=ft.Colors.BLACK12),
+            **tema.estilo_container_header(),
             content=ft.Row(
                 [
-                    ft.Text(
-                        "👥 Clientes",
-                        size=26,
-                        weight=ft.FontWeight.BOLD,
-                        color=ft.Colors.BLUE_GREY_900
-                    ),
+                    tema.texto_titulo("👥 Clientes", 24),
                     ft.ElevatedButton(
                         "Volver",
                         icon=ft.Icons.ARROW_BACK,
-                        on_click=lambda e: self.volver_atras()
+                        on_click=lambda e: self.volver_atras(),
+                        **tema.estilo_boton_secundario()
                     )
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
@@ -66,13 +60,14 @@ class ClientesView(ft.Container):
                 ft.Container(
                     expand=True,
                     padding=30,
-                    bgcolor=ft.Colors.GREY_100,
+                    bgcolor=tema.COLOR_FONDO,
                     content=ft.Column(
                         [
                             self.header,
                             self.lista_clientes
                         ],
-                        spacing=25
+                        spacing=25,
+                        expand=True
                     )
                 ),
                 ft.Container(
@@ -109,42 +104,28 @@ class ClientesView(ft.Container):
                 id_c = f[0]
 
                 card = ft.Container(
-                    padding=20,
-                    border_radius=14,
-                    bgcolor=ft.Colors.WHITE,
-                    shadow=ft.BoxShadow(
-                        blur_radius=10,
-                        color=ft.Colors.BLACK12
-                    ),
+                    **tema.estilo_card(),
                     content=ft.Column(
                         [
                             ft.Row(
                                 [
                                     ft.Column(
                                         [
-                                            ft.Text(
-                                                f[1] or "",
-                                                size=18,
-                                                weight=ft.FontWeight.BOLD
-                                            ),
-                                            ft.Text(
-                                                f"DNI: {f[2] or ''}",
-                                                size=12,
-                                                color=ft.Colors.GREY_600
-                                            )
+                                            tema.texto_titulo(f[1] or "", 18),
+                                            tema.texto_cuerpo(f"DNI: {f[2] or ''}", 12)
                                         ]
                                     ),
                                     ft.Row(
                                         [
                                             ft.IconButton(
                                                 icon=ft.Icons.EDIT_OUTLINED,
-                                                icon_color=ft.Colors.BLUE_600,
+                                                icon_color=tema.COLOR_PRIMARY,
                                                 tooltip="Editar",
                                                 on_click=lambda e, _id=id_c: self.mostrar_formulario_editar_id(_id)
                                             ),
                                             ft.IconButton(
                                                 icon=ft.Icons.DELETE_OUTLINE,
-                                                icon_color=ft.Colors.RED_600,
+                                                icon_color=tema.COLOR_ERROR,
                                                 tooltip="Eliminar",
                                                 on_click=lambda e, _id=id_c: self.confirmar_eliminar_id(_id)
                                             ),
@@ -153,19 +134,15 @@ class ClientesView(ft.Container):
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                             ),
-                            ft.Divider(height=12),
+                            tema.crear_divider(),
                             ft.Row(
                                 [
-                                    ft.Text(f"📞 {f[3] or ''}"),
-                                    ft.Text(f"📍 {f[4] or ''}", expand=True),
+                                    tema.texto_cuerpo(f"📞 {f[3] or ''}", 14),
+                                    tema.texto_cuerpo(f"📍 {f[4] or ''}", 14),
                                 ],
                                 spacing=20
                             ),
-                            ft.Text(
-                                f"ID: {f[0]}",
-                                size=11,
-                                color=ft.Colors.GREY_500
-                            ),
+                            tema.texto_cuerpo(f"ID: {f[0]}", 11),
                         ],
                         spacing=8
                     )
@@ -186,11 +163,11 @@ class ClientesView(ft.Container):
     # =====================================================
 
     def mostrar_formulario_agregar(self, e=None):
-        id_field = ft.TextField(label="ID (opcional)")
-        nombre = ft.TextField(label="Nombre")
-        dni = ft.TextField(label="DNI")
-        telefono = ft.TextField(label="Teléfono")
-        direccion = ft.TextField(label="Dirección")
+        id_field = ft.TextField(label="ID (opcional)", **tema.estilo_textfield())
+        nombre = ft.TextField(label="Nombre", **tema.estilo_textfield())
+        dni = ft.TextField(label="DNI", **tema.estilo_textfield())
+        telefono = ft.TextField(label="Teléfono", **tema.estilo_textfield())
+        direccion = ft.TextField(label="Dirección", **tema.estilo_textfield())
 
         def guardar(ev):
             id_val = (id_field.value or "").strip()
@@ -217,38 +194,39 @@ class ClientesView(ft.Container):
 
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.GREY_100,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=6,
-                content=ft.Container(
-                    width=480,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Text("Nuevo Cliente", size=22, weight=ft.FontWeight.BOLD),
-                            id_field,
-                            nombre,
-                            dni,
-                            telefono,
-                            direccion,
-                            ft.Row(
-                                [
-                                    ft.TextButton(
-                                        "Cancelar",
-                                        on_click=lambda e: (self._build_table_view(), self.cargar_clientes())
-                                    ),
-                                    ft.ElevatedButton(
-                                        "Guardar",
-                                        icon=ft.Icons.SAVE,
-                                        on_click=guardar
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=15
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=480,
+                constraints=ft.BoxConstraints(max_width=480),
+                content=ft.Column(
+                    [
+                        tema.texto_titulo("Nuevo Cliente", 22),
+                        id_field,
+                        nombre,
+                        dni,
+                        telefono,
+                        direccion,
+                        ft.Row(
+                            [
+                                ft.TextButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_clientes()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Guardar",
+                                    icon=ft.Icons.SAVE,
+                                    on_click=guardar,
+                                    **tema.estilo_boton_primario()
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=15
                 )
             )
         )
@@ -268,10 +246,10 @@ class ClientesView(ft.Container):
         finally:
             self.conexion.cerrar(conn)
 
-        nombre = ft.TextField(label="Nombre", value=datos[0])
-        dni = ft.TextField(label="DNI", value=datos[1])
-        telefono = ft.TextField(label="Teléfono", value=datos[2])
-        direccion = ft.TextField(label="Dirección", value=datos[3])
+        nombre = ft.TextField(label="Nombre", value=datos[0], **tema.estilo_textfield())
+        dni = ft.TextField(label="DNI", value=datos[1], **tema.estilo_textfield())
+        telefono = ft.TextField(label="Teléfono", value=datos[2], **tema.estilo_textfield())
+        direccion = ft.TextField(label="Dirección", value=datos[3], **tema.estilo_textfield())
 
         def guardar(ev):
             conn2 = self.conexion.conectar()
@@ -289,41 +267,38 @@ class ClientesView(ft.Container):
 
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.GREY_100,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=6,
-                content=ft.Container(
-                    width=480,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Text(
-                                f"Editar Cliente (ID {id_cliente})",
-                                size=22,
-                                weight=ft.FontWeight.BOLD
-                            ),
-                            nombre,
-                            dni,
-                            telefono,
-                            direccion,
-                            ft.Row(
-                                [
-                                    ft.TextButton(
-                                        "Cancelar",
-                                        on_click=lambda e: (self._build_table_view(), self.cargar_clientes())
-                                    ),
-                                    ft.ElevatedButton(
-                                        "Guardar",
-                                        icon=ft.Icons.SAVE,
-                                        on_click=guardar
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=15
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=480,
+                constraints=ft.BoxConstraints(max_width=480),
+                content=ft.Column(
+                    [
+                        tema.texto_titulo(f"Editar Cliente (ID {id_cliente})", 22),
+                        nombre,
+                        dni,
+                        telefono,
+                        direccion,
+                        ft.Row(
+                            [
+                                ft.TextButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_clientes()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Guardar",
+                                    icon=ft.Icons.SAVE,
+                                    on_click=guardar,
+                                    **tema.estilo_boton_primario()
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=15
                 )
             )
         )
@@ -348,50 +323,46 @@ class ClientesView(ft.Container):
 
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.BLACK54,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=10,
-                content=ft.Container(
-                    width=420,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Icon(
-                                ft.Icons.WARNING_AMBER_ROUNDED,
-                                size=64,
-                                color=ft.Colors.RED
-                            ),
-                            ft.Text(
-                                "Confirmar eliminación",
-                                size=22,
-                                weight=ft.FontWeight.BOLD
-                            ),
-                            ft.Text(
-                                f"¿Estás seguro de eliminar el cliente ID {id_cliente}?",
-                                text_align=ft.TextAlign.CENTER
-                            ),
-                            ft.Row(
-                                [
-                                    ft.OutlinedButton(
-                                        "Cancelar",
-                                        on_click=lambda e: (self._build_table_view(), self.cargar_clientes())
-                                    ),
-                                    ft.ElevatedButton(
-                                        "Eliminar",
-                                        icon=ft.Icons.DELETE,
-                                        bgcolor=ft.Colors.RED,
-                                        color="white",
-                                        on_click=eliminar
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.END,
-                                spacing=10
-                            )
-                        ],
-                        spacing=20,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=420,
+                constraints=ft.BoxConstraints(max_width=420),
+                content=ft.Column(
+                    [
+                        ft.Icon(
+                            ft.Icons.WARNING_AMBER_ROUNDED,
+                            size=64,
+                            color=tema.COLOR_ERROR
+                        ),
+                        tema.texto_titulo("Confirmar eliminación", 22),
+                        tema.texto_cuerpo(
+                            f"¿Estás seguro de eliminar el cliente ID {id_cliente}?",
+                            14
+                        ),
+                        ft.Row(
+                            [
+                                ft.OutlinedButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_clientes()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Eliminar",
+                                    icon=ft.Icons.DELETE,
+                                    bgcolor=tema.COLOR_ERROR,
+                                    color=tema.COLOR_ON_SURFACE,
+                                    on_click=eliminar
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END,
+                            spacing=10
+                        )
+                    ],
+                    spacing=20,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
                 )
             )
         )

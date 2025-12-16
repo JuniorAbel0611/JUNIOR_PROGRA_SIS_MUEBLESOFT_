@@ -1,11 +1,12 @@
 import flet as ft
 from muebles.conexion import ConexionDB
 import mysql.connector
+import tema
 
 
 class VentasView(ft.Container):
     def __init__(self, page, volver_atras):
-        super().__init__(expand=True)
+        super().__init__(expand=True, bgcolor=tema.COLOR_FONDO)
         self.page = page
         self.volver_atras = volver_atras
         self.conexion = ConexionDB()
@@ -21,27 +22,20 @@ class VentasView(ft.Container):
 
         self.btn_add = ft.FloatingActionButton(
             icon=ft.Icons.ADD,
-            bgcolor=ft.Colors.BLUE,
+            bgcolor=tema.COLOR_PRIMARY,
             on_click=self.mostrar_formulario_agregar
         )
 
         self.header = ft.Container(
-            padding=20,
-            bgcolor=ft.Colors.WHITE,
-            border_radius=12,
-            shadow=ft.BoxShadow(blur_radius=8, color=ft.Colors.BLACK12),
+            **tema.estilo_container_header(),
             content=ft.Row(
                 [
-                    ft.Text(
-                        "💳 Gestión de Ventas",
-                        size=26,
-                        weight=ft.FontWeight.BOLD,
-                        color=ft.Colors.BLUE_GREY_900
-                    ),
+                    tema.texto_titulo("💳 Gestión de Ventas", 24),
                     ft.ElevatedButton(
                         "Volver",
                         icon=ft.Icons.ARROW_BACK,
-                        on_click=lambda e: self.volver_atras()
+                        on_click=lambda e: self.volver_atras(),
+                        **tema.estilo_boton_secundario()
                     )
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
@@ -61,13 +55,14 @@ class VentasView(ft.Container):
                 ft.Container(
                     expand=True,
                     padding=30,
-                    bgcolor=ft.Colors.GREY_100,
+                    bgcolor=tema.COLOR_FONDO,
                     content=ft.Column(
                         [
                             self.header,
                             self.lista_ventas
                         ],
-                        spacing=25
+                        spacing=25,
+                        expand=True
                     )
                 ),
                 ft.Container(
@@ -103,33 +98,23 @@ class VentasView(ft.Container):
                 id_v = f[0]
 
                 card = ft.Container(
-                    padding=20,
-                    border_radius=14,
-                    bgcolor=ft.Colors.WHITE,
-                    shadow=ft.BoxShadow(
-                        blur_radius=10,
-                        color=ft.Colors.BLACK12
-                    ),
+                    **tema.estilo_card(),
                     content=ft.Column(
                         [
                             ft.Row(
                                 [
-                                    ft.Text(
-                                        f"Venta #{id_v}",
-                                        size=18,
-                                        weight=ft.FontWeight.BOLD
-                                    ),
+                                    tema.texto_titulo(f"Venta #{id_v}", 18),
                                     ft.Row(
                                         [
                                             ft.IconButton(
                                                 icon=ft.Icons.EDIT_OUTLINED,
-                                                icon_color=ft.Colors.BLUE,
+                                                icon_color=tema.COLOR_PRIMARY,
                                                 tooltip="Editar",
                                                 on_click=lambda e, _id=id_v: self.mostrar_formulario_editar_id(_id)
                                             ),
                                             ft.IconButton(
                                                 icon=ft.Icons.DELETE_OUTLINE,
-                                                icon_color=ft.Colors.RED,
+                                                icon_color=tema.COLOR_ERROR,
                                                 tooltip="Eliminar",
                                                 on_click=lambda e, _id=id_v: self.confirmar_eliminar_id(_id)
                                             ),
@@ -138,14 +123,11 @@ class VentasView(ft.Container):
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                             ),
-                            ft.Divider(),
-                            ft.Text(f"Cliente ID: {f[1] if f[1] is not None else ''}"),
-                            ft.Text(f"Usuario ID: {f[2] if f[2] is not None else ''}"),
-                            ft.Text(f"Fecha: {f[3] if f[3] is not None else ''}"),
-                            ft.Text(
-                                f"Total: S/ {f[4] if f[4] is not None else ''}",
-                                weight=ft.FontWeight.BOLD
-                            ),
+                            tema.crear_divider(),
+                            tema.texto_cuerpo(f"Cliente ID: {f[1] if f[1] is not None else ''}", 14),
+                            tema.texto_cuerpo(f"Usuario ID: {f[2] if f[2] is not None else ''}", 14),
+                            tema.texto_cuerpo(f"Fecha: {f[3] if f[3] is not None else ''}", 14),
+                            tema.texto_titulo(f"Total: S/ {f[4] if f[4] is not None else ''}", 16),
                         ],
                         spacing=8
                     )
@@ -168,11 +150,11 @@ class VentasView(ft.Container):
     def mostrar_formulario_agregar(self, e=None):
         print(">> mostrar_formulario_agregar() ventas")
 
-        id_field = ft.TextField(label="ID (opcional)")
-        id_cliente = ft.TextField(label="ID Cliente")
-        id_usuario = ft.TextField(label="ID Usuario")
-        fecha = ft.TextField(label="Fecha (YYYY-MM-DD HH:MM:SS)")
-        total = ft.TextField(label="Total")
+        id_field = ft.TextField(label="ID (opcional)", **tema.estilo_textfield())
+        id_cliente = ft.TextField(label="ID Cliente", **tema.estilo_textfield())
+        id_usuario = ft.TextField(label="ID Usuario", **tema.estilo_textfield())
+        fecha = ft.TextField(label="Fecha (YYYY-MM-DD HH:MM:SS)", **tema.estilo_textfield())
+        total = ft.TextField(label="Total", **tema.estilo_textfield())
 
         def guardar(ev):
             id_val = (id_field.value or "").strip()
@@ -226,10 +208,10 @@ class VentasView(ft.Container):
         finally:
             self.conexion.cerrar(conn)
 
-        id_cliente = ft.TextField(label="ID Cliente", value=str(datos[0]) if datos[0] else "")
-        id_usuario = ft.TextField(label="ID Usuario", value=str(datos[1]) if datos[1] else "")
-        fecha = ft.TextField(label="Fecha (YYYY-MM-DD HH:MM:SS)", value=str(datos[2]) if datos[2] else "")
-        total = ft.TextField(label="Total", value=str(datos[3]) if datos[3] else "")
+        id_cliente = ft.TextField(label="ID Cliente", value=str(datos[0]) if datos[0] else "", **tema.estilo_textfield())
+        id_usuario = ft.TextField(label="ID Usuario", value=str(datos[1]) if datos[1] else "", **tema.estilo_textfield())
+        fecha = ft.TextField(label="Fecha (YYYY-MM-DD HH:MM:SS)", value=str(datos[2]) if datos[2] else "", **tema.estilo_textfield())
+        total = ft.TextField(label="Total", value=str(datos[3]) if datos[3] else "", **tema.estilo_textfield())
 
         def guardar(ev):
             conn2 = self.conexion.conectar()
@@ -273,49 +255,42 @@ class VentasView(ft.Container):
 
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.BLACK54,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=10,
-                content=ft.Container(
-                    width=420,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Icon(
-                                ft.Icons.WARNING_AMBER_ROUNDED,
-                                size=64,
-                                color=ft.Colors.RED
-                            ),
-                            ft.Text(
-                                "Confirmar eliminación",
-                                size=22,
-                                weight=ft.FontWeight.BOLD
-                            ),
-                            ft.Text(
-                                f"¿Eliminar venta ID {id_venta}?",
-                                text_align=ft.TextAlign.CENTER
-                            ),
-                            ft.Row(
-                                [
-                                    ft.OutlinedButton(
-                                        "Cancelar",
-                                        on_click=lambda e: (self._build_table_view(), self.cargar_ventas())
-                                    ),
-                                    ft.ElevatedButton(
-                                        "Eliminar",
-                                        icon=ft.Icons.DELETE,
-                                        bgcolor=ft.Colors.RED,
-                                        color="white",
-                                        on_click=eliminar
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=20,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=420,
+                constraints=ft.BoxConstraints(max_width=420),
+                content=ft.Column(
+                    [
+                        ft.Icon(
+                            ft.Icons.WARNING_AMBER_ROUNDED,
+                            size=64,
+                            color=tema.COLOR_ERROR
+                        ),
+                        tema.texto_titulo("Confirmar eliminación", 22),
+                        tema.texto_cuerpo(f"¿Eliminar venta ID {id_venta}?", 14),
+                        ft.Row(
+                            [
+                                ft.OutlinedButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_ventas()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Eliminar",
+                                    icon=ft.Icons.DELETE,
+                                    bgcolor=tema.COLOR_ERROR,
+                                    color=tema.COLOR_ON_SURFACE,
+                                    on_click=eliminar
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=20,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
                 )
             )
         )
@@ -328,34 +303,35 @@ class VentasView(ft.Container):
     def _mostrar_formulario(self, titulo, campos, on_save):
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.GREY_100,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=6,
-                content=ft.Container(
-                    width=480,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Text(titulo, size=22, weight=ft.FontWeight.BOLD),
-                            *campos,
-                            ft.Row(
-                                [
-                                    ft.TextButton(
-                                        "Cancelar",
-                                        on_click=lambda e: (self._build_table_view(), self.cargar_ventas())
-                                    ),
-                                    ft.ElevatedButton(
-                                        "Guardar",
-                                        icon=ft.Icons.SAVE,
-                                        on_click=on_save
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=15
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=480,
+                constraints=ft.BoxConstraints(max_width=480),
+                content=ft.Column(
+                    [
+                        tema.texto_titulo(titulo, 22),
+                        *campos,
+                        ft.Row(
+                            [
+                                ft.TextButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_ventas()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Guardar",
+                                    icon=ft.Icons.SAVE,
+                                    on_click=on_save,
+                                    **tema.estilo_boton_primario()
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=15
                 )
             )
         )

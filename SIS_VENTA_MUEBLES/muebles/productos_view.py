@@ -1,16 +1,17 @@
 import flet as ft
 from muebles.conexion import ConexionDB
 import mysql.connector
+import tema
 
 
 class ProductosView(ft.Container):
     """
     MISMA LÓGICA
-    NUEVO DISEÑO (igual a ClientesView)
+    NUEVO DISEÑO - TEMA OSCURO
     """
 
     def __init__(self, page, volver_atras):
-        super().__init__(expand=True)
+        super().__init__(expand=True, bgcolor=tema.COLOR_FONDO)
         self.page = page
         self.volver_atras = volver_atras
         self.conexion = ConexionDB()
@@ -32,27 +33,20 @@ class ProductosView(ft.Container):
 
         self.btn_add = ft.FloatingActionButton(
             icon=ft.Icons.ADD,
-            bgcolor=ft.Colors.BLUE,
+            bgcolor=tema.COLOR_PRIMARY,
             on_click=self.mostrar_formulario_agregar
         )
 
         self.header = ft.Container(
-            padding=20,
-            bgcolor=ft.Colors.WHITE,
-            border_radius=12,
-            shadow=ft.BoxShadow(blur_radius=8, color=ft.Colors.BLACK12),
+            **tema.estilo_container_header(),
             content=ft.Row(
                 [
-                    ft.Text(
-                        self.title_text,
-                        size=26,
-                        weight=ft.FontWeight.BOLD,
-                        color=ft.Colors.BLUE_GREY_900
-                    ),
+                    tema.texto_titulo(self.title_text, 24),
                     ft.ElevatedButton(
                         "Volver",
                         icon=ft.Icons.ARROW_BACK,
-                        on_click=lambda e: self.volver_atras()
+                        on_click=lambda e: self.volver_atras(),
+                        **tema.estilo_boton_secundario()
                     )
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
@@ -73,13 +67,14 @@ class ProductosView(ft.Container):
                 ft.Container(
                     expand=True,
                     padding=30,
-                    bgcolor=ft.Colors.GREY_100,
+                    bgcolor=tema.COLOR_FONDO,
                     content=ft.Column(
                         [
                             self.header,
                             self.lista_productos
                         ],
-                        spacing=25
+                        spacing=25,
+                        expand=True
                     )
                 ),
                 ft.Container(
@@ -152,33 +147,26 @@ class ProductosView(ft.Container):
                     if c["is_pk"]:
                         continue
                     detalles.append(
-                        ft.Text(f"{c['name'].replace('_',' ').capitalize()}: {row[i] or ''}")
+                        tema.texto_cuerpo(f"{c['name'].replace('_',' ').capitalize()}: {row[i] or ''}", 14)
                     )
 
                 card = ft.Container(
-                    padding=20,
-                    border_radius=14,
-                    bgcolor=ft.Colors.WHITE,
-                    shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.BLACK12),
+                    **tema.estilo_card(),
                     content=ft.Column(
                         [
                             ft.Row(
                                 [
-                                    ft.Text(
-                                        f"ID: {pk_val}",
-                                        size=18,
-                                        weight=ft.FontWeight.BOLD
-                                    ),
+                                    tema.texto_titulo(f"ID: {pk_val}", 18),
                                     ft.Row(
                                         [
                                             ft.IconButton(
                                                 icon=ft.Icons.EDIT_OUTLINED,
-                                                icon_color=ft.Colors.BLUE,
+                                                icon_color=tema.COLOR_PRIMARY,
                                                 on_click=lambda e, _id=pk_val: self.mostrar_formulario_editar_id(_id)
                                             ),
                                             ft.IconButton(
                                                 icon=ft.Icons.DELETE_OUTLINE,
-                                                icon_color=ft.Colors.RED,
+                                                icon_color=tema.COLOR_ERROR,
                                                 on_click=lambda e, _id=pk_val: self.confirmar_eliminar_id(_id)
                                             )
                                         ]
@@ -186,7 +174,7 @@ class ProductosView(ft.Container):
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                             ),
-                            ft.Divider(),
+                            tema.crear_divider(),
                             *detalles
                         ],
                         spacing=8
@@ -210,13 +198,13 @@ class ProductosView(ft.Container):
     def mostrar_formulario_agregar(self, e=None):
         id_field = None
         if self.pk_column:
-            id_field = ft.TextField(label=f"{self.pk_column} (opcional)")
+            id_field = ft.TextField(label=f"{self.pk_column} (opcional)", **tema.estilo_textfield())
 
         fields = []
         for c in self.columns:
             if c["is_pk"]:
                 continue
-            tf = ft.TextField(label=c["name"].replace("_", " ").capitalize())
+            tf = ft.TextField(label=c["name"].replace("_", " ").capitalize(), **tema.estilo_textfield())
             fields.append((c["name"], tf))
 
         def guardar(ev):
@@ -265,7 +253,8 @@ class ProductosView(ft.Container):
                 continue
             tf = ft.TextField(
                 label=c["name"].replace("_", " ").capitalize(),
-                value=str(fila[i] or "")
+                value=str(fila[i] or ""),
+                **tema.estilo_textfield()
             )
             fields.append((c["name"], tf))
 
@@ -308,29 +297,37 @@ class ProductosView(ft.Container):
 
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.BLACK54,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=10,
-                content=ft.Container(
-                    width=420,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Icon(ft.Icons.WARNING_AMBER_ROUNDED, size=64, color=ft.Colors.RED),
-                            ft.Text("Confirmar eliminación", size=22, weight=ft.FontWeight.BOLD),
-                            ft.Text(f"¿Eliminar producto ID {pk_val}?"),
-                            ft.Row(
-                                [
-                                    ft.OutlinedButton("Cancelar", on_click=lambda e: (self._build_table_view(), self.cargar_productos())),
-                                    ft.ElevatedButton("Eliminar", bgcolor=ft.Colors.RED, color="white", on_click=eliminar)
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=20,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=420,
+                constraints=ft.BoxConstraints(max_width=420),
+                content=ft.Column(
+                    [
+                        ft.Icon(ft.Icons.WARNING_AMBER_ROUNDED, size=64, color=tema.COLOR_ERROR),
+                        tema.texto_titulo("Confirmar eliminación", 22),
+                        tema.texto_cuerpo(f"¿Eliminar producto ID {pk_val}?", 14),
+                        ft.Row(
+                            [
+                                ft.OutlinedButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_productos()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Eliminar",
+                                    bgcolor=tema.COLOR_ERROR,
+                                    color=tema.COLOR_ON_SURFACE,
+                                    on_click=eliminar
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=20,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
                 )
             )
         )
@@ -341,27 +338,35 @@ class ProductosView(ft.Container):
     def _mostrar_formulario(self, titulo, campos, on_save):
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.GREY_100,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=6,
-                content=ft.Container(
-                    width=480,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Text(titulo, size=22, weight=ft.FontWeight.BOLD),
-                            *campos,
-                            ft.Row(
-                                [
-                                    ft.TextButton("Cancelar", on_click=lambda e: (self._build_table_view(), self.cargar_productos())),
-                                    ft.ElevatedButton("Guardar", icon=ft.Icons.SAVE, on_click=on_save)
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=15
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=480,
+                constraints=ft.BoxConstraints(max_width=480),
+                content=ft.Column(
+                    [
+                        tema.texto_titulo(titulo, 22),
+                        *campos,
+                        ft.Row(
+                            [
+                                ft.TextButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_productos()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Guardar",
+                                    icon=ft.Icons.SAVE,
+                                    on_click=on_save,
+                                    **tema.estilo_boton_primario()
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=15
                 )
             )
         )

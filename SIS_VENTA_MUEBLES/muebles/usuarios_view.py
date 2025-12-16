@@ -1,11 +1,12 @@
 import flet as ft
 from muebles.conexion import ConexionDB
 import mysql.connector
+import tema
 
 
 class UsuariosView(ft.Container):
     def __init__(self, page, volver_atras):
-        super().__init__(expand=True)
+        super().__init__(expand=True, bgcolor=tema.COLOR_FONDO)
         self.page = page
         self.volver_atras = volver_atras
         self.conexion = ConexionDB()
@@ -14,22 +15,20 @@ class UsuariosView(ft.Container):
 
         self.btn_add = ft.FloatingActionButton(
             icon=ft.Icons.ADD,
-            bgcolor=ft.Colors.BLUE,
+            bgcolor=tema.COLOR_PRIMARY,
             on_click=self.mostrar_formulario_agregar
         )
 
         self.header = ft.Container(
-            padding=20,
-            bgcolor=ft.Colors.WHITE,
-            border_radius=12,
-            shadow=ft.BoxShadow(blur_radius=8, color=ft.Colors.BLACK12),
+            **tema.estilo_container_header(),
             content=ft.Row(
                 [
-                    ft.Text("👤 Gestión de Usuarios", size=26, weight=ft.FontWeight.BOLD),
+                    tema.texto_titulo("👤 Gestión de Usuarios", 24),
                     ft.ElevatedButton(
                         "Volver",
                         icon=ft.Icons.ARROW_BACK,
-                        on_click=lambda e: self.volver_atras()
+                        on_click=lambda e: self.volver_atras(),
+                        **tema.estilo_boton_secundario()
                     )
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
@@ -49,10 +48,11 @@ class UsuariosView(ft.Container):
                 ft.Container(
                     expand=True,
                     padding=30,
-                    bgcolor=ft.Colors.GREY_100,
+                    bgcolor=tema.COLOR_FONDO,
                     content=ft.Column(
                         [self.header, self.lista_usuarios],
-                        spacing=25
+                        spacing=25,
+                        expand=True
                     )
                 ),
                 ft.Container(
@@ -83,27 +83,24 @@ class UsuariosView(ft.Container):
                 id_u = f[0]
 
                 card = ft.Container(
-                    padding=20,
-                    border_radius=14,
-                    bgcolor=ft.Colors.WHITE,
-                    shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.BLACK12),
+                    **tema.estilo_card(),
                     content=ft.Column(
                         [
                             ft.Row(
                                 [
-                                    ft.Text(f"ID: {id_u}", size=18, weight=ft.FontWeight.BOLD),
+                                    tema.texto_titulo(f"ID: {id_u}", 18),
                                     ft.Row(
                                         [
                                             ft.IconButton(
                                                 icon=ft.Icons.EDIT_OUTLINED,
                                                 tooltip="Editar",
-                                                icon_color=ft.Colors.BLUE,
+                                                icon_color=tema.COLOR_PRIMARY,
                                                 on_click=lambda e, _id=id_u: self.mostrar_formulario_editar_id(_id)
                                             ),
                                             ft.IconButton(
                                                 icon=ft.Icons.DELETE_OUTLINE,
                                                 tooltip="Eliminar",
-                                                icon_color=ft.Colors.RED,
+                                                icon_color=tema.COLOR_ERROR,
                                                 on_click=lambda e, _id=id_u: self.confirmar_eliminar_id(_id)
                                             )
                                         ]
@@ -111,10 +108,10 @@ class UsuariosView(ft.Container):
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                             ),
-                            ft.Divider(),
-                            ft.Text(f"Nombre: {f[1] or ''}"),
-                            ft.Text(f"Usuario: {f[2] or ''}"),
-                            ft.Text(f"Rol: {f[3] or ''}")
+                            tema.crear_divider(),
+                            tema.texto_cuerpo(f"Nombre: {f[1] or ''}", 14),
+                            tema.texto_cuerpo(f"Usuario: {f[2] or ''}", 14),
+                            tema.texto_cuerpo(f"Rol: {f[3] or ''}", 14)
                         ],
                         spacing=8
                     )
@@ -131,11 +128,11 @@ class UsuariosView(ft.Container):
     # =====================================================
 
     def mostrar_formulario_agregar(self, e=None):
-        id_field = ft.TextField(label="ID (opcional)")
-        nombre = ft.TextField(label="Nombre")
-        usuario = ft.TextField(label="Usuario")
-        contrasena = ft.TextField(label="Contraseña", password=True)
-        rol = ft.TextField(label="Rol")
+        id_field = ft.TextField(label="ID (opcional)", **tema.estilo_textfield())
+        nombre = ft.TextField(label="Nombre", **tema.estilo_textfield())
+        usuario = ft.TextField(label="Usuario", **tema.estilo_textfield())
+        contrasena = ft.TextField(label="Contraseña", password=True, **tema.estilo_textfield())
+        rol = ft.TextField(label="Rol", **tema.estilo_textfield())
 
         def guardar(ev):
             id_val = (id_field.value or "").strip()
@@ -180,10 +177,10 @@ class UsuariosView(ft.Container):
         finally:
             self.conexion.cerrar(conn)
 
-        nombre = ft.TextField(label="Nombre", value=datos[0])
-        usuario = ft.TextField(label="Usuario", value=datos[1])
-        contrasena = ft.TextField(label="Contraseña", value=datos[2], password=True)
-        rol = ft.TextField(label="Rol", value=datos[3])
+        nombre = ft.TextField(label="Nombre", value=datos[0], **tema.estilo_textfield())
+        usuario = ft.TextField(label="Usuario", value=datos[1], **tema.estilo_textfield())
+        contrasena = ft.TextField(label="Contraseña", value=datos[2], password=True, **tema.estilo_textfield())
+        rol = ft.TextField(label="Rol", value=datos[3], **tema.estilo_textfield())
 
         def guardar(ev):
             conn2 = self.conexion.conectar()
@@ -223,37 +220,37 @@ class UsuariosView(ft.Container):
 
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.BLACK54,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=10,
-                content=ft.Container(
-                    padding=30,
-                    width=420,
-                    content=ft.Column(
-                        [
-                            ft.Icon(ft.Icons.WARNING_AMBER, size=60, color=ft.Colors.RED),
-                            ft.Text("Confirmar eliminación", size=20, weight=ft.FontWeight.BOLD),
-                            ft.Text(f"¿Eliminar usuario ID {id_usuario}?"),
-                            ft.Row(
-                                [
-                                    ft.OutlinedButton(
-                                        "Cancelar",
-                                        on_click=lambda e: (self._build_table_view(), self.cargar_usuarios())
-                                    ),
-                                    ft.ElevatedButton(
-                                        "Eliminar",
-                                        bgcolor=ft.Colors.RED,
-                                        color="white",
-                                        on_click=eliminar
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=20,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=420,
+                constraints=ft.BoxConstraints(max_width=420),
+                content=ft.Column(
+                    [
+                        ft.Icon(ft.Icons.WARNING_AMBER, size=60, color=tema.COLOR_ERROR),
+                        tema.texto_titulo("Confirmar eliminación", 20),
+                        tema.texto_cuerpo(f"¿Eliminar usuario ID {id_usuario}?", 14),
+                        ft.Row(
+                            [
+                                ft.OutlinedButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_usuarios()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Eliminar",
+                                    bgcolor=tema.COLOR_ERROR,
+                                    color=tema.COLOR_ON_SURFACE,
+                                    on_click=eliminar
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=20,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
                 )
             )
         )
@@ -266,34 +263,35 @@ class UsuariosView(ft.Container):
     def _mostrar_formulario(self, titulo, campos, on_save):
         self.content = ft.Container(
             expand=True,
-            bgcolor=ft.Colors.GREY_100,
+            bgcolor=tema.COLOR_FONDO,
             alignment=ft.alignment.center,
-            content=ft.Card(
-                elevation=6,
-                content=ft.Container(
-                    width=480,
-                    padding=30,
-                    content=ft.Column(
-                        [
-                            ft.Text(titulo, size=22, weight=ft.FontWeight.BOLD),
-                            *campos,
-                            ft.Row(
-                                [
-                                    ft.TextButton(
-                                        "Cancelar",
-                                        on_click=lambda e: (self._build_table_view(), self.cargar_usuarios())
-                                    ),
-                                    ft.ElevatedButton(
-                                        "Guardar",
-                                        icon=ft.Icons.SAVE,
-                                        on_click=on_save
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.END
-                            )
-                        ],
-                        spacing=15
-                    )
+            padding=ft.padding.all(20),
+            content=ft.Container(
+                **tema.estilo_card(),
+                width=480,
+                constraints=ft.BoxConstraints(max_width=480),
+                content=ft.Column(
+                    [
+                        tema.texto_titulo(titulo, 22),
+                        *campos,
+                        ft.Row(
+                            [
+                                ft.TextButton(
+                                    "Cancelar",
+                                    on_click=lambda e: (self._build_table_view(), self.cargar_usuarios()),
+                                    color=tema.COLOR_PRIMARY
+                                ),
+                                ft.ElevatedButton(
+                                    "Guardar",
+                                    icon=ft.Icons.SAVE,
+                                    on_click=on_save,
+                                    **tema.estilo_boton_primario()
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.END
+                        )
+                    ],
+                    spacing=15
                 )
             )
         )
